@@ -12,27 +12,20 @@ import java.util.List;
 
 @Entity
 @Table(name = "orderEntity")
-//@org.springframework.data.relational.core.mapping.Table("orderentity")
-public class OrderEntity {
-
-    private static final long serialVersionUID = 1L;
+public class Order {
 
     @Id
-//    @org.springframework.data.annotation.Id
     @Column
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @Formula("(select coalesce(sum(i.amount), 0) from chosenitem i where i.order_id = id)")
-//    @org.springframework.data.relational.core.mapping.Column("totalAmount")
+    @Formula("(select coalesce(sum(i.amount), 0) from chosen_item i where i.order_id = id)")
     private long totalAmount;
 
-    @Formula("(select coalesce(sum(i.price), 0) from chosenitem i where i.order_id = id)")
-//    @org.springframework.data.relational.core.mapping.Column("totalCost")
+    @Formula("(select coalesce(sum(i.price * i.amount), 0) from chosen_item i where i.order_id = id)")
     private long totalCost;
 
     @Column
-//    @org.springframework.data.relational.core.mapping.Column("userName")
     private String userName;
 
     @Column
@@ -44,11 +37,11 @@ public class OrderEntity {
     @JsonProperty
     private List<ChosenItem> items;
 
-    OrderEntity() {
+    Order() {
 
     }
     @JsonCreator
-    OrderEntity(String userName) {
+    Order(String userName) {
         this.userName = userName;
         this.status = Status.COLLECTING;
         this.items = new ArrayList<>();
@@ -60,11 +53,6 @@ public class OrderEntity {
 
     public void addItem(ChosenItem item) {
         items.add(item);
-    }
-
-    public void deleteItem(long id) {
-        ChosenItem item = items.stream().filter(i -> i.getId() == id).findFirst().orElse(null);
-        items.remove(item);
     }
 
     public void setItems(List<ChosenItem> items) {

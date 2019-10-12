@@ -5,19 +5,15 @@ package com.developing.shop.orders.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "chosenItem")
-//@org.springframework.data.relational.core.mapping.Table("chosenitem")
+@IdClass(ChosenItemIdClass.class)
 public class ChosenItem {
-    @Id
-//    @org.springframework.data.annotation.Id
-    @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
 
+    @Id
     @Column
-//    @org.springframework.data.relational.core.mapping.Column("itemId")
     private long itemId;
 
     @Column
@@ -26,22 +22,19 @@ public class ChosenItem {
     @Column
     private long price;
 
+    @Id
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
     @JoinColumn(name = "orderId", nullable = false)
     @JsonIgnore
-    private OrderEntity order;
+    private Order order;
 
-    ChosenItem(long itemId, OrderEntity order, long amount) {
+    ChosenItem(long itemId, Order order, long amount) {
         this.itemId = itemId;
         this.order = order;
         this.amount = amount;
     }
 
     ChosenItem() {}
-
-    public long getId() {
-        return id;
-    }
 
     public long getItemId() {
         return itemId;
@@ -51,11 +44,11 @@ public class ChosenItem {
         this.itemId = itemId;
     }
 
-    public OrderEntity getOrder() {
+    public Order getOrder() {
         return order;
     }
 
-    public void setOrder(OrderEntity order) {
+    public void setOrder(Order order) {
         this.order = order;
     }
 
