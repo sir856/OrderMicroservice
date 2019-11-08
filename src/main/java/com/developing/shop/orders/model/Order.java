@@ -1,7 +1,6 @@
 package com.developing.shop.orders.model;
 
 
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Formula;
@@ -38,8 +37,8 @@ public class Order {
     private List<ChosenItem> items;
 
     Order() {
-
     }
+
     @JsonCreator
     Order(String userName) {
         this.userName = userName;

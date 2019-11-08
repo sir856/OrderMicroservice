@@ -2,7 +2,7 @@ package com.developing.shop.orders.model;
 
 import java.io.Serializable;
 
-public class ChosenItemIdClass implements Serializable {
-    private long itemId;
+class ChosenItemIdClass implements Serializable {
+    private long item;
     private long order;
 }

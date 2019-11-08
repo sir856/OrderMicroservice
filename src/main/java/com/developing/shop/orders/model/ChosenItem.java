@@ -2,7 +2,10 @@ package com.developing.shop.orders.model;
 
 
 
+import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 
@@ -12,11 +15,13 @@ import javax.persistence.*;
 public class ChosenItem {
 
     @Id
-    @Column
-    private long itemId;
+    @ManyToOne(optional = false, cascade = CascadeType.ALL)
+    @JoinColumn(name = "itemId", nullable = false)
+    @JsonIgnoreProperties({"items", "price", "amount"})
+    private Item item;
 
     @Column
-    private long amount;
+    private int amount;
 
     @Column
     private long price;
@@ -27,20 +32,20 @@ public class ChosenItem {
     @JsonIgnore
     private Order order;
 
-    ChosenItem(long itemId, Order order, long amount) {
-        this.itemId = itemId;
+    ChosenItem(Item item, Order order, int amount) {
+        this.item = item;
         this.order = order;
         this.amount = amount;
     }
 
     ChosenItem() {}
 
-    public long getItemId() {
-        return itemId;
+    public Item getItem() {
+        return item;
     }
 
-    public void setItemId(long itemId) {
-        this.itemId = itemId;
+    public void setItem(Item item) {
+        this.item = item;
     }
 
     public Order getOrder() {
@@ -51,11 +56,11 @@ public class ChosenItem {
         this.order = order;
     }
 
-    public long getAmount() {
+    public int getAmount() {
         return amount;
     }
 
-    public void setAmount(long amount) {
+    public void setAmount(int amount) {
         this.amount = amount;
     }
 

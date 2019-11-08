@@ -1,10 +1,14 @@
 package com.developing.shop.orders.service;
 
 import com.developing.shop.orders.model.ChosenItem;
+import com.developing.shop.orders.model.Item;
 import com.developing.shop.orders.model.Order;
 import com.developing.shop.orders.model.Status;
 import com.developing.shop.orders.repository.ChosenItemRepository;
+import com.developing.shop.orders.repository.ItemRepository;
 import com.developing.shop.orders.repository.OrderRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,15 +25,17 @@ import java.util.function.Function;
 
 @Service
 public class OrderServiceImpl implements OrderService {
-    public String ORDER_BY = "orderBy";
-    public String USERNAME = "userName";
-    public String TOTAL_AMOUNT = "totalAmount";
-    public String TOTAL_AMOUNT_FROM = "totalAmountFrom";
-    public String TOTAL_AMOUNT_TO = "totalAmountTo";
-    public String TOTAL_COST = "totalCost";
-    public String TOTAL_COST_FROM = "totalCostFrom";
-    public String TOTAL_COST_TO = "totalCostTo";
-    public String STATUS = "status";
+    private String ORDER_BY = "orderBy";
+    private String USERNAME = "userName";
+    private String TOTAL_AMOUNT = "totalAmount";
+    private String TOTAL_AMOUNT_FROM = "totalAmountFrom";
+    private String TOTAL_AMOUNT_TO = "totalAmountTo";
+    private String TOTAL_COST = "totalCost";
+    private String TOTAL_COST_FROM = "totalCostFrom";
+    private String TOTAL_COST_TO = "totalCostTo";
+    private String STATUS = "status";
+
+    private Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
 
     private final EntityManager em;
@@ -41,12 +47,14 @@ public class OrderServiceImpl implements OrderService {
     private Map<String, javax.persistence.criteria.Order> ordersMap;
 
     private final OrderRepository orderRepository;
-
-    private final ChosenItemRepository itemRepository;
+    private final ChosenItemRepository chosenItemRepository;
+    private final ItemRepository itemRepository;
 
     @Autowired
-    public OrderServiceImpl(OrderRepository orderRepository, ChosenItemRepository itemRepository, EntityManager em) {
+    public OrderServiceImpl(OrderRepository orderRepository, ChosenItemRepository chosenItemRepository,
+                            ItemRepository itemRepository, EntityManager em) {
         this.orderRepository = orderRepository;
+        this.chosenItemRepository = chosenItemRepository;
         this.itemRepository = itemRepository;
 
         this.em = em;
@@ -82,6 +90,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<Order> getOrders(Map<String, String> params) {
+        logger.info("getOrders() method called");
         ArrayList<Predicate> predicates = new ArrayList<>();
         ArrayList<javax.persistence.criteria.Order> orders = new ArrayList<>();
 
@@ -130,22 +139,34 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order getOrderById(long id) {
-        Order order = orderRepository.findById(id).orElse(null);
-        return order;
+        return orderRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("No order with id : " + id));
     }
 
     @Override
-    public Order addItem(ChosenItem item, long orderId) {
+    public Order addItemToOrder(ChosenItem chosenItem, long orderId) {
+        Item item = itemRepository.findById(chosenItem.getItem().getId()).
+                orElseThrow(() -> new IllegalArgumentException("No item with id : " + chosenItem.getItem().getId()));
+        if (!item.correctAmount(chosenItem.getAmount())) {
+            throw new IllegalArgumentException("Available " + item.getAmount() + " items with id : " + item.getId());
+        }
         Order order = getOrderById(orderId);
-        item.setOrder(order);
-        itemRepository.save(item);
+        chosenItem.setOrder(order);
+        chosenItem.setItem(item);
+        chosenItem.setPrice(item.getPrice());
+        chosenItemRepository.save(chosenItem);
         return order;
     }
 
 
     @Override
-    public Order deleteItem(long itemId, long orderId) {
-        itemRepository.deleteByCompositeKey(itemId, orderId);
-        return orderRepository.findById(orderId).orElse(null);
+    public Order deleteItemFromOrder(long itemId, long orderId) {
+        chosenItemRepository.deleteByCompositeKey(itemId, orderId);
+        return getOrderById(orderId);
+    }
+
+    @Override
+    public Item addItem(Item item) {
+        return itemRepository.save(item);
     }
 }
