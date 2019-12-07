@@ -102,7 +102,7 @@ public class OrderServiceImpl implements OrderService {
 
             normalizeParams(params);
 
-            for (String key : params.keySet() ) {
+            for (String key : params.keySet()) {
                 if (predicatesMap.containsKey(key)) {
                     predicates.add(predicatesMap.get(key).apply(params.get(key)));
                 }
@@ -122,7 +122,7 @@ public class OrderServiceImpl implements OrderService {
                 result.add(ordersMap.get(orderStr));
             }
         }
-        return result ;
+        return result;
     }
 
     private void normalizeParams(Map<String, String> params) {
@@ -147,26 +147,33 @@ public class OrderServiceImpl implements OrderService {
     public Order addItemToOrder(ChosenItem chosenItem, long orderId) {
         Item item = itemRepository.findById(chosenItem.getItem().getId()).
                 orElseThrow(() -> new IllegalArgumentException("No item with id : " + chosenItem.getItem().getId()));
-        if (!item.correctAmount(chosenItem.getAmount())) {
-            throw new IllegalArgumentException("Available " + item.getAmount() + " items with id : " + item.getId());
-        }
+
+        item.changeAmount(chosenItem.getAmount());
+
         Order order = getOrderById(orderId);
+        ChosenItem itemInBD = chosenItemRepository.getByCompositeKey(item.getId(), orderId);
+        if (itemInBD != null) {
+            chosenItem.setAmount(chosenItem.getAmount() + itemInBD.getAmount());
+        }
         chosenItem.setOrder(order);
         chosenItem.setItem(item);
         chosenItem.setPrice(item.getPrice());
         chosenItemRepository.save(chosenItem);
+
         return order;
     }
 
 
     @Override
-    public Order deleteItemFromOrder(long itemId, long orderId) {
+    public ChosenItem deleteItemFromOrder(long itemId, long orderId) {
+        ChosenItem item = chosenItemRepository.getByCompositeKey(itemId, orderId);
         chosenItemRepository.deleteByCompositeKey(itemId, orderId);
-        return getOrderById(orderId);
+        return item;
     }
 
     @Override
     public Item addItem(Item item) {
         return itemRepository.save(item);
     }
+
 }

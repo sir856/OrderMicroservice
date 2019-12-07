@@ -13,4 +13,7 @@ public interface ChosenItemRepository extends JpaRepository<ChosenItem, Long> {
     @Transactional
     @Query(value = "delete from ChosenItem i where order_id=:order_id and item_id=:item_id")
     void deleteByCompositeKey(@Param("item_id") long itemId, @Param("order_id") long orderId);
+
+    @Query(value = "select i from ChosenItem i where order_id=:order_id and item_id=:item_id")
+    ChosenItem getByCompositeKey(@Param("item_id") long itemId, @Param("order_id") long orderId);
 }

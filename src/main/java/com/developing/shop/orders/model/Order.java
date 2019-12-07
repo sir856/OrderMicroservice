@@ -6,12 +6,13 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.hibernate.annotations.Formula;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "orderEntity")
-public class Order {
+@Table(name = "orders")
+public class Order implements Serializable {
 
     @Id
     @Column

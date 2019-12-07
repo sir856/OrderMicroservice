@@ -3,14 +3,14 @@ package com.developing.shop.orders.model;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "itemEntity")
-public class Item {
+@Table(name = "item")
+public class Item implements Serializable {
     @Column
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Id
     private long id;
 
@@ -30,14 +30,15 @@ public class Item {
     Item() {
     }
 
-    Item(String name, Integer amount, Long price) {
+    public Item(long id, String name, Integer amount, Long price) {
+        this.id = id;
         this.name = name;
         this.amount = amount;
         this.price = price;
         this.items = new ArrayList<>();
     }
 
-    Item (long id) {
+    Item(long id) {
         this.id = id;
     }
 
@@ -65,13 +66,12 @@ public class Item {
         this.price = price;
     }
 
-    public boolean correctAmount(int amount) {
+    public void changeAmount(int amount) {
         if (this.amount >= amount) {
             this.amount -= amount;
-            return true;
         }
         else {
-            return false;
+            throw new IllegalArgumentException("Lacks " + (amount - this.amount) + " items with id : " + this.id);
         }
     }
 }

@@ -1,18 +1,16 @@
 package com.developing.shop.orders.model;
 
 
-
-import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "chosenItem")
 @IdClass(ChosenItemIdClass.class)
-public class ChosenItem {
+public class ChosenItem implements Serializable {
 
     @Id
     @ManyToOne(optional = false, cascade = CascadeType.ALL)
@@ -38,7 +36,8 @@ public class ChosenItem {
         this.amount = amount;
     }
 
-    ChosenItem() {}
+    ChosenItem() {
+    }
 
     public Item getItem() {
         return item;

@@ -9,9 +9,15 @@ import java.util.Map;
 
 public interface OrderService {
     Order addOrder(Order order);
-    List<Order> getOrders(Map<String, String> params) ;
+
+    List<Order> getOrders(Map<String, String> params);
+
     Order getOrderById(long id);
+
     Order addItemToOrder(ChosenItem item, long orderId);
-    Order deleteItemFromOrder(long itemId, long orderId);
+
+    ChosenItem deleteItemFromOrder(long itemId, long orderId);
+
     Item addItem(Item item);
+
 }
