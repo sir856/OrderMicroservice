@@ -20,4 +20,6 @@ public interface OrderService {
 
     Item addItem(Item item);
 
+    Order setCollected(long id);
+
 }

@@ -1,12 +1,10 @@
 package com.developing.shop.orders.controllers;
 
 import com.developing.shop.orders.model.ChosenItem;
-import com.developing.shop.orders.model.Item;
 import com.developing.shop.orders.model.Order;
 import com.developing.shop.orders.service.OrderService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.amqp.rabbit.core.RabbitAdmin;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -52,6 +50,15 @@ public class OrdersController {
         return order;
     }
 
+    @PutMapping("/orders/{id}/collected")
+    public Order setOrderCollected(@PathVariable("id") long id) {
+        Order order = orderService.setCollected(id);
+        rabbitTemplate.setExchange("purchaseExchange");
+        rabbitTemplate.convertAndSend("add", order);
+
+        return order;
+    }
+
     @DeleteMapping("/orders/{order_id}/{item_id}")
     public ChosenItem deleteItemFromOrder(@PathVariable("order_id") long orderId, @PathVariable("item_id") long itemId) {
         ChosenItem item = orderService.deleteItemFromOrder(itemId, orderId);
@@ -60,12 +67,14 @@ public class OrdersController {
         return item;
     }
 
-    @PostMapping(value = "/items")
-    public Item createItem(@RequestBody Item item) {
-        return orderService.addItem(item);
-    }
+//    @PostMapping(value = "/items")
+//    public Item createItem(@RequestBody Item item) {
+//        return orderService.addItem(item);
+//    }
 
-    @ExceptionHandler(IllegalArgumentException.class)
+
+
+    @ExceptionHandler({IllegalArgumentException.class, IllegalStateException.class})
     public ResponseEntity<Map<String, String>> handleIllegalArgumentException(Exception ex) {
         logger.error("Illegal argument exception", ex);
 

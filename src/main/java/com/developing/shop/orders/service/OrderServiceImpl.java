@@ -85,12 +85,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order addOrder(Order order) {
+        order.setStatus(Status.COLLECTING);
         return orderRepository.save(order);
     }
 
     @Override
     public List<Order> getOrders(Map<String, String> params) {
-        logger.info("getOrders() method called");
         ArrayList<Predicate> predicates = new ArrayList<>();
         ArrayList<javax.persistence.criteria.Order> orders = new ArrayList<>();
 
@@ -145,12 +145,16 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order addItemToOrder(ChosenItem chosenItem, long orderId) {
+        Order order = getOrderById(orderId);
+        if (order.getStatus() != Status.COLLECTING) {
+            throw new IllegalStateException("Order already collected");
+        }
+
         Item item = itemRepository.findById(chosenItem.getItem().getId()).
                 orElseThrow(() -> new IllegalArgumentException("No item with id : " + chosenItem.getItem().getId()));
 
         item.changeAmount(chosenItem.getAmount());
 
-        Order order = getOrderById(orderId);
         ChosenItem itemInBD = chosenItemRepository.getByCompositeKey(item.getId(), orderId);
         if (itemInBD != null) {
             chosenItem.setAmount(chosenItem.getAmount() + itemInBD.getAmount());
@@ -166,9 +170,17 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public ChosenItem deleteItemFromOrder(long itemId, long orderId) {
-        ChosenItem item = chosenItemRepository.getByCompositeKey(itemId, orderId);
+        if (getOrderById(orderId).getStatus() != Status.COLLECTING) {
+            throw new IllegalStateException("Order already collected");
+        }
+
+        Item item = itemRepository.findById(itemId).orElseThrow(()
+                -> new IllegalArgumentException("No item with id : " + itemId));
+        ChosenItem chosenItem = chosenItemRepository.getByCompositeKey(itemId, orderId);
+        item.changeAmount(-chosenItem.getAmount());
+        itemRepository.save(item);
         chosenItemRepository.deleteByCompositeKey(itemId, orderId);
-        return item;
+        return chosenItem;
     }
 
     @Override
@@ -176,4 +188,15 @@ public class OrderServiceImpl implements OrderService {
         return itemRepository.save(item);
     }
 
+    @Override
+    public Order setCollected(long id) {
+        Order order = getOrderById(id);
+        if (order.getStatus() == Status.COLLECTING) {
+            order.setStatus(Status.COLLECTED);
+        }
+
+        orderRepository.save(order);
+
+        return order;
+    }
 }

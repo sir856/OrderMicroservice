@@ -55,6 +55,11 @@ public class RabbitConfig {
     }
 
     @Bean
+    public Queue orderStatusQueue() {
+        return new Queue("orderStatus");
+    }
+
+    @Bean
     public DirectExchange directExchange(){
         return new DirectExchange("orderExchange");
     }
@@ -67,5 +72,10 @@ public class RabbitConfig {
     @Bean
     public Binding bindingDeleteItem(){
         return BindingBuilder.bind(deleteItemQueue()).to(directExchange()).with("delete");
+    }
+
+    @Bean
+    public Binding bindingOrderStatus(){
+        return BindingBuilder.bind(orderStatusQueue()).to(directExchange()).with("status");
     }
 }

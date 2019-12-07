@@ -47,7 +47,7 @@ public class Order implements Serializable {
         this.items = new ArrayList<>();
     }
 
-    List<ChosenItem> getItems() {
+    public List<ChosenItem> getItems() {
         return items;
     }
 
@@ -86,6 +86,7 @@ public class Order implements Serializable {
     public void setUserName(String userName) {
         this.userName = userName;
     }
+
 
     public Status getStatus() {
         return status;
