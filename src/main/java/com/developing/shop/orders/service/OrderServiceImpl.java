@@ -193,9 +193,8 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrderById(id);
         if (order.getStatus() == Status.COLLECTING) {
             order.setStatus(Status.COLLECTED);
+            orderRepository.save(order);
         }
-
-        orderRepository.save(order);
 
         return order;
     }

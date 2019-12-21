@@ -1,5 +1,7 @@
 package com.developing.shop.orders.messageListeners;
 
+import com.developing.shop.orders.messageListeners.data.MessageItem;
+import com.developing.shop.orders.messageListeners.data.StatusChange;
 import com.developing.shop.orders.model.ChosenItem;
 import com.developing.shop.orders.model.Item;
 import com.developing.shop.orders.model.Order;
@@ -13,7 +15,6 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.Map;
 
 @Component
 public class RabbitMqListener {
@@ -29,27 +30,32 @@ public class RabbitMqListener {
     }
 
     @RabbitListener(queues = "addItem")
-    public void addItem(com.developing.shop.items.model.Item newItem) {
+    public void addItem(MessageItem newItem) {
         Item item = new Item(newItem.getId(), newItem.getName(), newItem.getAmount(), newItem.getPrice());
 
         itemRepository.save(item);
     }
 
     @RabbitListener(queues = "deleteItem")
-    public void deleteItem(com.developing.shop.items.model.Item deletingItem) {
+    public void deleteItem(long id) {
 
-        itemRepository.deleteById(deletingItem.getId());
+        itemRepository.deleteById(id);
     }
 
     @RabbitListener(queues = "cancelToOrder")
     public void cancelOrder(long id) {
         Order order = orderRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("No order with id : " + id));
+        if (order.getStatus() == Status.CANCELLED) {
+            return;
+        }
+
         order.setStatus(Status.CANCELLED);
         for (ChosenItem chosenItem : order.getItems()) {
             Item item = chosenItem.getItem();
             item.changeAmount(-chosenItem.getAmount());
             itemRepository.save(item);
         }
+        orderRepository.save(order);
     }
 
     @RabbitListener(queues = "orderStatus")

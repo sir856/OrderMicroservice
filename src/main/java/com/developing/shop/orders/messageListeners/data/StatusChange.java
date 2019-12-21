@@ -1,4 +1,4 @@
-package com.developing.shop.orders.messageListeners;
+package com.developing.shop.orders.messageListeners.data;
 
 import com.developing.shop.orders.model.Status;
 

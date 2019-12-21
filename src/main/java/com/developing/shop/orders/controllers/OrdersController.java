@@ -1,8 +1,10 @@
 package com.developing.shop.orders.controllers;
 
+import com.developing.shop.items.messageListeners.data.MessageChosenItem;
 import com.developing.shop.orders.model.ChosenItem;
 import com.developing.shop.orders.model.Order;
 import com.developing.shop.orders.service.OrderService;
+import com.developing.shop.purchase.listeners.data.MessageOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -46,7 +48,7 @@ public class OrdersController {
     public Order addItemToOrder(@PathVariable("id") long id, @RequestBody ChosenItem item) {
         Order order = orderService.addItemToOrder(item, id);
         rabbitTemplate.setExchange("itemExchange");
-        rabbitTemplate.convertAndSend("add", item);
+        rabbitTemplate.convertAndSend("add", new MessageChosenItem(item.getItem().getId(), id, item.getAmount()));
         return order;
     }
 
@@ -54,7 +56,7 @@ public class OrdersController {
     public Order setOrderCollected(@PathVariable("id") long id) {
         Order order = orderService.setCollected(id);
         rabbitTemplate.setExchange("purchaseExchange");
-        rabbitTemplate.convertAndSend("add", order);
+        rabbitTemplate.convertAndSend("add", new MessageOrder(id, order.getTotalCost()));
 
         return order;
     }
@@ -63,7 +65,7 @@ public class OrdersController {
     public ChosenItem deleteItemFromOrder(@PathVariable("order_id") long orderId, @PathVariable("item_id") long itemId) {
         ChosenItem item = orderService.deleteItemFromOrder(itemId, orderId);
         rabbitTemplate.setExchange("itemExchange");
-        rabbitTemplate.convertAndSend("delete", item);
+        rabbitTemplate.convertAndSend("delete", new MessageChosenItem(itemId, orderId, item.getAmount()));
         return item;
     }
 
