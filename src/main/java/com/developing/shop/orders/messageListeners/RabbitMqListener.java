@@ -49,7 +49,6 @@ public class RabbitMqListener {
             return;
         }
 
-        order.setStatus(Status.CANCELLED);
         for (ChosenItem chosenItem : order.getItems()) {
             Item item = chosenItem.getItem();
             item.changeAmount(-chosenItem.getAmount());

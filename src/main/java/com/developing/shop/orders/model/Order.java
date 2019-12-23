@@ -95,4 +95,9 @@ public class Order implements Serializable {
     public void setStatus(Status status) {
         this.status = status;
     }
+
+    @Override
+    public String toString() {
+        return "Hello";
+    }
 }

@@ -21,8 +21,9 @@ public class RabbitConfig {
     @Bean
     public ConnectionFactory connectionFactory() {
         CachingConnectionFactory connectionFactory =
-                new CachingConnectionFactory("localhost");
-
+                new CachingConnectionFactory("192.168.43.194");
+        connectionFactory.setUsername("test");
+        connectionFactory.setPassword("test");
         return connectionFactory;
     }
 

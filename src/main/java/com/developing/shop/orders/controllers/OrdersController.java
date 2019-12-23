@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("api/warehouse")
+@RequestMapping("/api/warehouse")
 public class OrdersController {
     private Logger logger = LoggerFactory.getLogger(OrdersController.class);
 
